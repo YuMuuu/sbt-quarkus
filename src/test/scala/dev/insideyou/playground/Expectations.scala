@@ -10,11 +10,9 @@ import munit.internal.console.StackTraces.dropInside
 trait Expectations:
   this: munit.FunSuite =>
   inline def expect(
-    inline cond: Boolean,
-    clue: => Any = "assertion failed",
-  )(using
-    loc: munit.Location
-  ): Unit =
+      inline cond: Boolean,
+      clue: => Any = "assertion failed"
+  )(using loc: munit.Location): Unit =
     lazy val calculatedClue =
       val expectyClue =
         try { Expecty.assert(cond); "" }
@@ -26,13 +24,10 @@ trait Expectations:
     assert(cond, calculatedClue)
 
   def expectEquals[A, B](
-    obtained: A,
-    expected: B,
-    clue: => Any = "values are not the same",
-  )(using
-    loc: munit.Location,
-    ev: B <:< A,
-  ): Unit =
+      obtained: A,
+      expected: B,
+      clue: => Any = "values are not the same"
+  )(using loc: munit.Location, ev: B <:< A): Unit =
     lazy val calculatedClue =
       val expectyClue =
         try { Expecty.assert(obtained == expected); "" }
@@ -44,13 +39,10 @@ trait Expectations:
     assertEquals(obtained, expected, calculatedClue)
 
   def expectNotEquals[A, B](
-    obtained: A,
-    expected: B,
-    clue: => Any = "values are the same",
-  )(using
-    loc: munit.Location,
-    ev: A =:= B,
-  ): Unit =
+      obtained: A,
+      expected: B,
+      clue: => Any = "values are the same"
+  )(using loc: munit.Location, ev: A =:= B): Unit =
     lazy val calculatedClue =
       val expectyClue =
         try { Expecty.assert(obtained != expected); "" }
@@ -62,11 +54,19 @@ trait Expectations:
       if expectyClue.isEmpty then clueWithSuffix
       else s"$RED\n$clueWithSuffix\n$expectyClue$RESET"
 
-    dropInside(if obtained == expected then failComparison(calculatedClue, obtained, expected))
+    dropInside(
+      if obtained == expected then
+        failComparison(calculatedClue, obtained, expected)
+    )
 
 object Expectations:
   private val ExtractMessage: PartialFunction[Throwable, String] =
     case e: AssertionError =>
       // it's in a try/catch because of .nn
-      try e.getMessage.nn.split("\n").nn.slice(2, Int.MaxValue).mkString("\n", "\n", "\n")
+      try
+        e.getMessage.nn
+          .split("\n")
+          .nn
+          .slice(2, Int.MaxValue)
+          .mkString("\n", "\n", "\n")
       catch case scala.util.control.NonFatal(_) => ""
